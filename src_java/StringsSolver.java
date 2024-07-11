@@ -57,16 +57,30 @@ public class StringsSolver {
     }
 
     public static String DEO_Solver(CLCSInstance clcsInst) {
+        long startTime = System.nanoTime();
+
         CLCS_DP_DEO solver = new CLCS_DP_DEO();
         DeoInstance deoInst = CLCS2Deo(clcsInst);
         solver.inst = deoInst;
         List<Integer> result = solver.DP_Deo();
+
+        long endTime = System.nanoTime();
+        long initTimeNS = endTime - startTime;
+        long initTimeMS = TimeUnit.MILLISECONDS.convert(initTimeNS, TimeUnit.NANOSECONDS);
+        System.out.println("DEO_DP took: " + initTimeMS + " ms");
         return StringsParsing.stringFromInt(result, clcsInst.getIndexToChar());
     }
 
     public static String AStar_Solver(CLCSInstance clcsInst) {
+        long startTime = System.nanoTime();
+
         AStarSolution astarSolution = AStar.AStarRun(clcsInst);
         List<Integer> result = astarSolution.solutions.get(0);
+
+        long endTime = System.nanoTime();
+        long initTimeNS = endTime - startTime;
+        long initTimeMS = TimeUnit.MILLISECONDS.convert(initTimeNS, TimeUnit.NANOSECONDS);
+        System.out.println("A_STAR took: " + initTimeMS + " ms");
         return StringsParsing.stringFromInt(result, clcsInst.getIndexToChar());
     }
 
