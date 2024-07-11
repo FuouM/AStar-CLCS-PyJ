@@ -1,3 +1,7 @@
+testcase/artificial/*
+testcase/CLCS_instances/*
+testcase/real/*
+
 # Compiled class file
 *.class
 
