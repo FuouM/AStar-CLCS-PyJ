@@ -2,6 +2,9 @@ testcase/artificial/*
 testcase/CLCS_instances/*
 testcase/real/*
 
+bin/*
+!bin/.gitkeep
+
 # Compiled class file
 *.class
 
