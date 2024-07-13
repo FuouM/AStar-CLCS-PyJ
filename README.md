@@ -4,7 +4,7 @@ Python & Java implementation of A* for Constrained Longest Common Subsequence (C
 ## Overview
 This project implements the A* algorithm for solving the Constrained Longest Common Subsequence problem, based on the C++ implementation described in the paper:
 
-**"An A* search algorithm for the constrained longest common subsequence problem"** 
+***"An A\* search algorithm for the constrained longest common subsequence problem"***
 by Marko Djukanovic, Christoph Berger, Günther R. Raidl, Christian Blum
 
 [DOI: 10.1016/j.ipl.2020.106041](https://doi.org/10.1016/j.ipl.2020.106041)
