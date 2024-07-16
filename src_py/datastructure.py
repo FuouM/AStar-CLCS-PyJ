@@ -14,11 +14,18 @@ from processing import (
 class Node:
     """A node in the state graph for the CLCS problem."""
 
-    @staticmethod
-    def create(num_inputs: int):
-        return Node(pv=[1] * num_inputs, l_v=0, u_v=0, parent=None)
+    __slots__ = ("pv", "l_v", "u_v", "parent")
+    PV_LENGTH = None
 
-    def __init__(self, pv: list[int], l_v: int, u_v: int, parent=None) -> None:
+    @classmethod
+    def set_pv_length(cls, length: int):
+        cls.PV_LENGTH = length
+
+    @staticmethod
+    def create():
+        return Node(pv=(1,) * Node.PV_LENGTH, l_v=0, u_v=0, parent=None)
+
+    def __init__(self, pv: tuple[int, ...], l_v: int, u_v: int, parent=None) -> None:
         self.pv = pv
         self.l_v = l_v
         self.u_v = u_v
@@ -29,11 +36,11 @@ class Node:
         and the length of the pattern prefix"""
         return (self.l_v, self.u_v)
 
-    def get_plu(self) -> tuple[list[int], int, int]:
+    def get_plu(self) -> tuple[tuple[int, ...], int, int]:
         return (self.pv, self.l_v, self.u_v)
 
     def get_pv(self) -> tuple[int, ...]:
-        return tuple(self.pv)
+        return self.pv
 
     def __repr__(self) -> str:
         return f"({self.pv}, {self.l_v}, {self.u_v})"
@@ -43,6 +50,9 @@ class Node:
             raise NotImplementedError
 
         return self.get_plu() == other.get_plu()
+
+    def __hash__(self):
+        return hash(self.get_plu())
 
 
 class Pv_Uv:
@@ -176,50 +186,78 @@ class CLCS:
         return mscores
 
 
-class MaxPriorityQueue:
+class MaxPriorityQueueOptimized:
     def __init__(self):
         self._queue = []
-        self._index = 0
+        self._entry_finder = {}
+        self._counter = 0
 
-    def push(self, item, priority):
-        # Use negative priority for max heap behavior
-        heapq.heappush(self._queue, (-priority, self._index, item))
-        self._index += 1
+    def push(self, item: Node, priority: int):
+        item_plu = item.get_plu()
+        if item_plu in self._entry_finder:
+            self.remove_node(item.pv, item.l_v, item.u_v)
+        entry = [-priority, self._counter, item]
+        self._entry_finder[item_plu] = entry
+        heapq.heappush(self._queue, entry)
+        self._counter += 1
 
-    def pop(self):
-        if self.is_empty():
-            raise IndexError("Priority queue is empty")
-        return heapq.heappop(self._queue)[-1]
+    def pop(self) -> Node:
+        while self._queue:
+            priority, count, item = heapq.heappop(self._queue)
+            if item is not None:
+                del self._entry_finder[item.get_plu()]
+                return item
+        raise KeyError("pop from an empty priority queue")
 
-    def peek(self):
-        if self.is_empty():
-            raise IndexError("Priority queue is empty")
-        return self._queue[0][-1]
+    def remove_node(self, pv: tuple[int, ...], l_v: int, u_v: int) -> bool:
+        key = (pv, l_v, u_v)
+        entry = self._entry_finder.pop(key, None)
+        if entry is not None:
+            entry[-1] = None  # Mark as removed
+            return True
+        return False
 
     def is_empty(self) -> bool:
-        return len(self._queue) == 0
+        return not bool(self._entry_finder)
 
     def __len__(self) -> int:
-        return len(self._queue)
+        return len(self._entry_finder)
 
-    def remove(self, item) -> bool:
-        for i, (priority, index, queued_item) in enumerate(self._queue):
-            if queued_item == item:
-                del self._queue[i]
-                heapq.heapify(self._queue)
-                return True
+
+class MaxPriorityQueueOptimizedSecond:
+    REMOVED = "<removed-node>"  # Placeholder for a removed node
+
+    def __init__(self):
+        self._queue = []
+        self._entry_finder = {}
+        self._counter = 0
+
+    def push(self, item: Node, priority: int):
+        item_plu = item.get_plu()
+        if item_plu in self._entry_finder:
+            self.remove_node(item_plu)
+        entry = [-priority, self._counter, item]
+        self._entry_finder[item_plu] = entry
+        heapq.heappush(self._queue, entry)
+        self._counter += 1
+
+    def pop(self) -> Node:
+        while self._queue:
+            priority, count, item = heapq.heappop(self._queue)
+            if item is not self.REMOVED:
+                del self._entry_finder[item.get_plu()]
+                return item
+        raise KeyError("pop from an empty priority queue")
+
+    def remove_node(self, item_plu: tuple[tuple[int, ...], int, int]) -> bool:
+        entry = self._entry_finder.pop(item_plu, None)
+        if entry is not None:
+            entry[-1] = self.REMOVED
+            return True
         return False
 
-    def remove_node(self, pv: list[int], l_v: int, u_v: int) -> bool:
-        for i, (priority, index, queued_item) in enumerate(self._queue):
-            assert isinstance(queued_item, Node)
-            if (
-                queued_item.pv == pv
-                and queued_item.l_v == l_v
-                and queued_item.u_v == u_v
-            ):
-                del self._queue[i]
-                heapq.heapify(self._queue)
-                return True
-        return False
+    def is_empty(self) -> bool:
+        return not self._entry_finder
 
+    def __len__(self) -> int:
+        return len(self._entry_finder)

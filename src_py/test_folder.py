@@ -61,8 +61,8 @@ for filepath in testfiles:
     len_deo = len(deo_out)
     len_astar = len(astar_out)
 
-    # print(f"DP_DEO [{len_deo}] {deo_out}")
-    # print(f"A_STAR [{len_astar}] {astar_out}")
+    print(f"DP_DEO [{len_deo}] {deo_out}")
+    print(f"A_STAR [{len_astar}] {astar_out}")
     print(f"DP_DEO took {deo_time} s")
     print(f"A_STAR took {astar_time} s")
 

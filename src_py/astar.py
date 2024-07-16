@@ -5,7 +5,8 @@ from datastructure import (
     Pv_Uv,
     AStar_Solution,
     CLCS,
-    MaxPriorityQueue,
+    # MaxPriorityQueueOptimized,
+    MaxPriorityQueueOptimizedSecond
 )
 from upperbound import ub_both
 
@@ -37,7 +38,7 @@ def insert_new_to_nv(
 ) -> None:
     N_v[v.get_pv()] = [v.get_l_u()]
 
-# @njit(parallel=True)
+
 def feasible_is_overshoot(
     num_inputs: int, pos_vec: list[int], input_lens: list[int]
 ) -> bool:
@@ -227,10 +228,11 @@ def is_ext_not_dominated(
 
 def astar_run(inst: CLCS):
     astar_sol = AStar_Solution.create()
-    Q_p = MaxPriorityQueue()
+    # Q_p = MaxPriorityQueueOptimized()
+    Q_p = MaxPriorityQueueOptimizedSecond()
     N_v: dict[tuple[int, ...], list[tuple[int, int]]] = dict()
-
-    root = Node.create(inst.num_inputs)
+    Node.set_pv_length(inst.num_inputs)
+    root = Node.create()
 
     expanded = 0
 
@@ -274,12 +276,13 @@ def astar_run(inst: CLCS):
                 )
 
                 for v_rel in to_remove:
-                    Q_p.remove_node(v_ext_pv, v_rel[0], v_rel[1])
+                    # Q_p.remove_node(v_ext_pv_tuple, v_rel[0], v_rel[1])
+                    Q_p.remove_node((v_ext_pv_tuple, v_rel[0], v_rel[1]))
                     N_v_relative.remove(v_rel)
 
             if do_insert:
                 v_ext_l_u = (v_ext_l, v_ext_u)
-                v_ext_node = Node(v_ext_pv, v_ext_l, v_ext_u, v)
+                v_ext_node = Node(v_ext_pv_tuple, v_ext_l, v_ext_u, v)
                 v_ext_ub = ub_both(inst, v_ext_node)
                 if is_vext_visited:
                     assert N_v_relative is not None
