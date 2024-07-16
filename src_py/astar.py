@@ -6,7 +6,7 @@ from datastructure import (
     AStar_Solution,
     CLCS,
     # MaxPriorityQueueOptimized,
-    MaxPriorityQueueOptimizedSecond
+    MaxPriorityQueueOptimizedSecond,
 )
 from upperbound import ub_both
 
@@ -40,20 +40,28 @@ def insert_new_to_nv(
 
 
 def feasible_is_overshoot(
-    num_inputs: int, pos_vec: list[int], input_lens: list[int]
+    num_inputs: int, pos_vec: tuple[int, ...], input_lens: list[int], posvec_blacklist: set
 ) -> bool:
+    if pos_vec in posvec_blacklist:
+        return True
     for i in range(num_inputs):
         if pos_vec[i] > input_lens[i]:
+            posvec_blacklist.add(pos_vec)
             return True
     return False
 
 
 def is_label_absent(
-    label: int, num_inputs: int, pos_vec: list[int], successor_tables: np.ndarray
+    label: int,
+    num_inputs: int,
+    pos_vec: tuple[int, ...],
+    successor_tables: np.ndarray,
+    label_blacklist: set,
 ) -> bool:
     for i in range(num_inputs):
         label_succ_idx = get_successor_label(i, label, pos_vec, successor_tables)
         if label_succ_idx == INT_MAX:
+            label_blacklist.add((label, pos_vec))
             return True
     return False
 
@@ -62,7 +70,7 @@ def is_dominated_by_other(
     label: int,
     label_other: int,
     num_inputs: int,
-    pos_vec: list[int],
+    pos_vec: tuple[int, ...],
     successor_tables: np.ndarray,
 ) -> bool:
     for i in range(num_inputs):
@@ -77,10 +85,11 @@ def is_label_dominated(
     label: int,
     num_inputs: int,
     sigma_len: int,
-    pos_vec: list[int],
+    pos_vec: tuple[int, ...],
     successor_tables: np.ndarray,
+    label_blacklist: set
 ) -> bool:
-    if is_label_absent(label, num_inputs, pos_vec, successor_tables):
+    if is_label_absent(label, num_inputs, pos_vec, successor_tables, label_blacklist):
         return True
 
     for label_other in range(sigma_len):
@@ -90,20 +99,29 @@ def is_label_dominated(
         if is_dominated_by_other(
             label, label_other, num_inputs, pos_vec, successor_tables
         ):
+            label_blacklist.add((label, pos_vec))
             return True
 
     return False
 
 
 def get_sigma_nd(
-    num_inputs: int, sigma_len: int, pos_vec: list[int], successor_tables: np.ndarray
+    num_inputs: int,
+    sigma_len: int,
+    pos_vec: tuple[int, ...],
+    successor_tables: np.ndarray,
+    label_blacklist: set,
 ) -> list[int]:
     sigma_nd: list[int] = []
 
     for label in range(sigma_len):
-        if not is_label_dominated(
-            label, num_inputs, sigma_len, pos_vec, successor_tables
-        ):
+        vector = (label, tuple(pos_vec))
+        is_dommed = True
+        if vector not in label_blacklist:
+            is_dommed = is_label_dominated(
+                label, num_inputs, sigma_len, pos_vec, successor_tables, label_blacklist
+            )
+        if not is_dommed:
             sigma_nd.append(label)
 
     return sigma_nd
@@ -113,7 +131,7 @@ def create_pv_uv_from_label(
     label: int,
     num_inputs: int,
     u_v: int,
-    pos_vec: list[int],
+    pos_vec: tuple[int, ...],
     successor_tables: np.ndarray,
 ) -> Pv_Uv:
     new_pv = [1] * num_inputs
@@ -126,7 +144,7 @@ def create_pv_uv_from_label(
 
 
 def get_successor_label(
-    i: int, label: int, pos_vec: list[int], successor_tables: np.ndarray
+    i: int, label: int, pos_vec: tuple[int, ...], successor_tables: np.ndarray
 ) -> int:
     return successor_tables[i][label, pos_vec[i] - 1]
 
@@ -135,7 +153,7 @@ def is_feasible(
     label: int,
     num_inputs: int,
     u_v: int,
-    pos_vec: list[int],
+    pos_vec: tuple[int, ...],
     successor_tables: np.ndarray,
     embed_tables: np.ndarray,
 ):
@@ -147,14 +165,16 @@ def is_feasible(
     return True
 
 
-def get_feasible_non_dominated_extensions(inst: CLCS, v: Node) -> list[Pv_Uv]:
+def get_feasible_non_dominated_extensions(
+    inst: CLCS, v: Node, label_blacklist: set, posvec_blacklist: set
+) -> list[Pv_Uv]:
     feasibles: list[Pv_Uv] = []
 
-    if feasible_is_overshoot(inst.num_inputs, v.pv, inst.input_lens):
+    if feasible_is_overshoot(inst.num_inputs, v.pv, inst.input_lens, posvec_blacklist):
         return feasibles
 
     sigma_nd = get_sigma_nd(
-        inst.num_inputs, inst.sigma_len, v.pv, inst.successor_tables
+        inst.num_inputs, inst.sigma_len, v.pv, inst.successor_tables, label_blacklist
     )
 
     if v.u_v == inst.constraint_len:
@@ -167,6 +187,10 @@ def get_feasible_non_dominated_extensions(inst: CLCS, v: Node) -> list[Pv_Uv]:
         return feasibles
 
     for label in sigma_nd:
+        vector = (label, v.pv)
+        if vector in label_blacklist:
+            continue
+
         is_next_constraint = label == inst.constraint[v.u_v]
 
         if not is_next_constraint and not is_feasible(
@@ -195,6 +219,7 @@ def derive_solution(v: Node, first_input: list[int]) -> list[int]:
         solution.insert(0, first_input[v.pv[0] - 2])
         v = v.parent
     return solution
+
 
 def is_ext_not_dominated(
     N_v_relative: list[tuple[int, int]],
@@ -231,6 +256,8 @@ def astar_run(inst: CLCS):
     # Q_p = MaxPriorityQueueOptimized()
     Q_p = MaxPriorityQueueOptimizedSecond()
     N_v: dict[tuple[int, ...], list[tuple[int, int]]] = dict()
+    label_blacklist: set = set()
+    posvec_blacklist: set = set()
     Node.set_pv_length(inst.num_inputs)
     root = Node.create()
 
@@ -248,7 +275,9 @@ def astar_run(inst: CLCS):
 
         insert_new_to_nv(N_v, v)
 
-        v_nd = get_feasible_non_dominated_extensions(inst, v)
+        v_nd = get_feasible_non_dominated_extensions(
+            inst, v, label_blacklist, posvec_blacklist
+        )
         expanded += 1
 
         if not v_nd:

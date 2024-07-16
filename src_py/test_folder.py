@@ -20,7 +20,8 @@ print(len(testfiles))
 checkpoint = 0
 # use_numba = False
 use_numba = True
-i = 4
+# i = 4
+i = 0
 
 for filepath in testfiles:
     if i < checkpoint:
@@ -74,7 +75,7 @@ for filepath in testfiles:
         break
 
     i += 1
-    if i == 7:
-        break
+    # if i == 7:
+    #     break
 else:
     print("All is good")
