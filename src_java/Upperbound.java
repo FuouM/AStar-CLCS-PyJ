@@ -34,8 +34,7 @@ public class Upperbound {
         return isOvershoot;
     }
 
-    public static int ubMScore(int minLength, int numInputs, List<Integer> positionVector, int[] inputLengths,
-            int[][][] mScores) {
+    public static int ubMScore(int minLength, int numInputs, List<Integer> positionVector, int[][][] mScores) {
         int ub = minLength;
         for (int i = 0; i < numInputs - 1; i++) {
             ub = Math.min(ub, mScores[i][positionVector.get(i) - 1][positionVector.get(i + 1) - 1]);
@@ -47,8 +46,7 @@ public class Upperbound {
         int ubMinOcc = ubMinOccurrence(inst.getSigmaLength(), inst.getNumInputs(), v.getPv(), inst.getInputLengths(),
                 inst.getOccurrenceTables());
 
-        int ubMscore = ubMScore(inst.getMinLength(), inst.getNumInputs(), v.getPv(), inst.getInputLengths(),
-                inst.getmScores());
+        int ubMscore = ubMScore(inst.getMinLength(), inst.getNumInputs(), v.getPv(), inst.getmScores());
 
         int ub = Math.min(ubMinOcc, ubMscore);
         return v.getL_v() + ub;

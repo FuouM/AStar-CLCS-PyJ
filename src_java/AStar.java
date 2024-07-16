@@ -23,7 +23,6 @@ public class AStar {
         int expanded = 0;
 
         Q_p.add(root);
-        insertNewNodeToNv(N_v, root);
 
         while (!Q_p.isEmpty()) {
             Node v = Q_p.poll();
@@ -226,7 +225,7 @@ public class AStar {
 
         for (int labelOther = 0; labelOther < sigmaLength; labelOther++) {
             // Skip the potential extension itself
-            if (label == labelOther)
+            if (labelOther == label)
                 continue;
 
             // If the label appears later than another label in both strings, it is
