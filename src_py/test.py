@@ -13,14 +13,22 @@ st = time.time()
 # raw_s0 = "bcaacbdba"
 # raw_s1 = "cbccadcbbd"
 
-raw_p_con = "ddddcacbcbcbbaadccddadbcbccbcbdcdccdbaccdabcdaacdb"
-raw_s0 = "dbdddbacbdccacbdbcbbccbdbcaacbdacdacdbddadbcacacbbbcdaabbccbbccbdbcdccbdabdaaacccdcaabbcbdcaaccbddbc"
-raw_s1 = "adddbdddcacbaaabcabcbbcadaababddccddcaddbcaddbccbcbccbdddcdadcdbccddbcacacdcddccadbcdccccbdcadacdcdb"
+# raw_p_con = "ddddcacbcbcbbaadccddadbcbccbcbdcdccdbaccdabcdaacdb"
+# raw_s0 = "dbdddbacbdccacbdbcbbccbdbcaacbdacdacdbddadbcacacbbbcdaabbccbbccbdbcdccbdabdaaacccdcaabbcbdcaaccbddbc"
+# raw_s1 = "adddbdddcacbaaabcabcbbcadaababddccddcaddbcaddbccbcbccbdddcdadcdbccddbcacacdcddccadbcdccccbdcadacdcdb"
 
-# raw_p_con = "HKH"
-# raw_s0 = "MVVDLPRYLPLLLLLELWEPMYLLCSQPKGLSRAHWFEIQHVQTSRQPCNTAMRGVNNYTQHCKQINTFLHESFQNVAATCSLHNITCKNGRKNCHESAEPVKMTDCSHTGGAYPNCRYSSDKQYKFFIVACEHPKKEDPPYQLVPVHLDKIV"
-# raw_s1 = "MKPLVIKFAWPLPLLLLLLLPPKLQGNYWDFGEYELNPEVRDFIREYESTGPTKPPTVKRIIEMITIGDQPFNDYDYCNTELRTKQIHYKGRCYPEHYIAGVPYGELVKACDGEEVQCKNGVKSCRRSMNLIEGVRCVLETGQQMTNCTYKTILMIGYPVVSCQWDEETKIFIPDHIYNMSLPK"
+raw_p_con = "HKH"
+raw_s0 = "MVVDLPRYLPLLLLLELWEPMYLLCSQPKGLSRAHWFEIQHVQTSRQPCNTAMRGVNNYTQHCKQINTFLHESFQNVAATCSLHNITCKNGRKNCHESAEPVKMTDCSHTGGAYPNCRYSSDKQYKFFIVACEHPKKEDPPYQLVPVHLDKIV"
+raw_s1 = "MKPLVIKFAWPLPLLLLLLLPPKLQGNYWDFGEYELNPEVRDFIREYESTGPTKPPTVKRIIEMITIGDQPFNDYDYCNTELRTKQIHYKGRCYPEHYIAGVPYGELVKACDGEEVQCKNGVKSCRRSMNLIEGVRCVLETGQQMTNCTYKTILMIGYPVVSCQWDEETKIFIPDHIYNMSLPK"
+
+# raw_p_con =	"aabdbdccddddcdbbcbbdaddbd"
+# raw_s0 = "daabcbaccacabbdabbdacabccdcbbaacdbdddcadcbbdbddcacddaacbbbbcaadacbbbbbcdacddabadcbdacdddddbdbdbccadd"
+# raw_s1 = "aaadcaaadcbdbbaaddccbddbaadabacddbcdaddddacbabaaadbbbcaadccbbcbbdbbccbdabbbbadaacdddcbabcbdbdbdbadbd"
+# raw_s2 = "bddbababaaaabbdacabddbadbddbadbbcbbbcdbadbacdddbcdbdcaddabcccacdbdbaabdccbbbdcddcbccaaadabdcabdbddca"
+
+
 inst = CLCS.fromstring(raw_p_con, [raw_s0, raw_s1], use_numba=use_numba)
+# inst = CLCS.fromstring(raw_p_con, [raw_s0, raw_s1, raw_s2], use_numba=use_numba)
 print(f"Init took {time.time() - st} s")
 st = time.time()
 deo_out = "".join(

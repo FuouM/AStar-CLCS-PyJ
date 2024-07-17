@@ -20,8 +20,8 @@ print(len(testfiles))
 checkpoint = 0
 # use_numba = False
 use_numba = True
-# i = 4
-i = 0
+i = 4
+# i = 0
 
 for filepath in testfiles:
     if i < checkpoint:
@@ -62,8 +62,8 @@ for filepath in testfiles:
     len_deo = len(deo_out)
     len_astar = len(astar_out)
 
-    print(f"DP_DEO [{len_deo}] {deo_out}")
-    print(f"A_STAR [{len_astar}] {astar_out}")
+    # print(f"DP_DEO [{len_deo}] {deo_out}")
+    # print(f"A_STAR [{len_astar}] {astar_out}")
     print(f"DP_DEO took {deo_time} s")
     print(f"A_STAR took {astar_time} s")
 
@@ -75,7 +75,7 @@ for filepath in testfiles:
         break
 
     i += 1
-    # if i == 7:
-    #     break
+    if i == 7:
+        break
 else:
     print("All is good")
