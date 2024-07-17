@@ -25,14 +25,8 @@ def is_node_dominated(v: Node, v_rel: tuple[int, int]) -> bool:
 
 
 def feasible_is_overshoot(
-    num_inputs: int,
-    pos_vec: tuple[int, ...],
-    input_lens: list[int],
-    posvec_blacklist: set,
+    num_inputs: int, pos_vec: tuple[int, ...], input_lens: list[int]
 ) -> bool:
-    if pos_vec in posvec_blacklist:
-        return True
-
     is_overshoot = False
     if num_inputs == 2:
         is_overshoot = two_feasible_is_overshoot(pos_vec, input_lens)
@@ -41,9 +35,6 @@ def feasible_is_overshoot(
             if pos_vec[i] > input_lens[i]:
                 is_overshoot = True
                 break
-
-    if is_overshoot:
-        posvec_blacklist.add(pos_vec)
 
     return is_overshoot
 
@@ -127,13 +118,10 @@ def get_sigma_nd(
     sigma_nd: list[int] = []
 
     for label in range(sigma_len):
-        vector = (label, pos_vec)
-        is_dommed = True
-        if vector not in label_blacklist:
-            is_dommed = is_label_dominated(
-                label, num_inputs, sigma_len, pos_vec, successor_tables, label_blacklist
-            )
-        if not is_dommed:
+        is_dommed = is_label_dominated(
+            label, num_inputs, sigma_len, pos_vec, successor_tables, label_blacklist
+        )
+        if (label, pos_vec) not in label_blacklist or not is_dommed:
             sigma_nd.append(label)
 
     return sigma_nd

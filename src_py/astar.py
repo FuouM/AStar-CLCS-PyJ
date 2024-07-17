@@ -24,7 +24,6 @@ def astar_run(inst: CLCS):
     Q_p = MaxPriorityQueueOptimizedThird()
     N_v: dict[tuple[int, ...], list[tuple[int, int]]] = dict()
     label_blacklist: set = set()
-    posvec_blacklist: set = set()
     Node.set_pv_length(inst.num_inputs)
     root = Node.create()
 
@@ -41,9 +40,7 @@ def astar_run(inst: CLCS):
 
         insert_new_to_nv(N_v, v)
 
-        v_nd = get_feasible_non_dominated_extensions(
-            inst, v, label_blacklist, posvec_blacklist
-        )
+        v_nd = get_feasible_non_dominated_extensions(inst, v, label_blacklist)
         expanded += 1
 
         if not v_nd:
@@ -117,9 +114,9 @@ def derive_solution(v: Node, first_input: list[int]) -> list[int]:
 
 
 def get_feasible_non_dominated_extensions(
-    inst: CLCS, v: Node, label_blacklist: set, posvec_blacklist: set
+    inst: CLCS, v: Node, label_blacklist: set
 ) -> list[Pv_Uv]:
-    if feasible_is_overshoot(inst.num_inputs, v.pv, inst.input_lens, posvec_blacklist):
+    if feasible_is_overshoot(inst.num_inputs, v.pv, inst.input_lens):
         return []
 
     sigma_nd = get_sigma_nd(
