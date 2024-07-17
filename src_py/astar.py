@@ -1,5 +1,3 @@
-import numpy as np
-
 from datastructure import (
     Node,
     Pv_Uv,
@@ -7,16 +5,24 @@ from datastructure import (
     CLCS,
     # MaxPriorityQueueOptimized,
     MaxPriorityQueueOptimizedSecond,
+    MaxPriorityQueueOptimizedThird,
+    PriorityQueueOptimizedFifth
 )
-from astar_utils import create_pv_uv_from_label, feasible_is_overshoot, get_sigma_nd, is_feasible, is_node_dominated
+from astar_utils import (
+    create_pv_uv_from_label,
+    feasible_is_overshoot,
+    get_sigma_nd,
+    is_feasible,
+    is_node_dominated,
+)
 from upperbound import ub_both
-
 
 
 def astar_run(inst: CLCS):
     astar_sol = AStar_Solution.create()
     # Q_p = MaxPriorityQueueOptimized()
-    Q_p = MaxPriorityQueueOptimizedSecond()
+    # Q_p = MaxPriorityQueueOptimizedSecond()
+    Q_p = MaxPriorityQueueOptimizedThird()
     N_v: dict[tuple[int, ...], list[tuple[int, int]]] = dict()
     label_blacklist: set = set()
     posvec_blacklist: set = set()
@@ -29,8 +35,7 @@ def astar_run(inst: CLCS):
 
     while not Q_p.is_empty():
         v: Node = Q_p.pop()
-        v_pv = v.get_pv()
-        N_v_relative: list[tuple[int, int]] | None = N_v.get(v_pv)
+        N_v_relative: list[tuple[int, int]] | None = N_v.get(v.pv)
 
         if N_v_relative is not None and check_is_outdated(v, N_v_relative):
             continue
@@ -61,34 +66,36 @@ def astar_run(inst: CLCS):
             is_vext_visited = N_v_relative is not None
 
             if is_vext_visited:
-                assert N_v_relative is not None
+                # assert N_v_relative is not None
                 to_remove: list[tuple[int, int]] = []
                 do_insert = is_ext_not_dominated(
-                    N_v_relative, v_ext_l, v_ext_u, to_remove
+                    N_v_relative, v_ext_l, v_ext_u, to_remove  # type: ignore
                 )
 
                 for v_rel in to_remove:
                     # Q_p.remove_node(v_ext_pv_tuple, v_rel[0], v_rel[1])
                     Q_p.remove_node((v_ext_pv_tuple, v_rel[0], v_rel[1]))
-                    N_v_relative.remove(v_rel)
+                    N_v_relative.remove(v_rel) # type: ignore
 
             if do_insert:
                 v_ext_l_u = (v_ext_l, v_ext_u)
                 v_ext_node = Node(v_ext_pv_tuple, v_ext_l, v_ext_u, v)
                 v_ext_ub = ub_both(inst, v_ext_node)
                 if is_vext_visited:
-                    assert N_v_relative is not None
-                    N_v_relative.insert(0, v_ext_l_u)
+                    # assert N_v_relative is not None
+                    N_v_relative.insert(0, v_ext_l_u)  # type: ignore
                 else:
                     insert_new_to_nv(N_v, v_ext_node)
                 Q_p.push(v_ext_node, v_ext_ub)
 
     return astar_sol
 
+
 def insert_new_to_nv(
     N_v: dict[tuple[int, ...], list[tuple[int, int]]], v: Node
 ) -> None:
     N_v[v.get_pv()] = [v.get_l_u()]
+
 
 def check_is_outdated(v: Node, N_v_relative: list[tuple[int, int]]) -> bool:
     outdated = False
@@ -98,12 +105,14 @@ def check_is_outdated(v: Node, N_v_relative: list[tuple[int, int]]) -> bool:
             break
     return outdated
 
+
 def derive_solution(v: Node, first_input: list[int]) -> list[int]:
     solution: list[int] = []
     while v.parent is not None:
         solution.insert(0, first_input[v.pv[0] - 2])
         v = v.parent
     return solution
+
 
 def get_feasible_non_dominated_extensions(
     inst: CLCS, v: Node, label_blacklist: set, posvec_blacklist: set
@@ -151,6 +160,7 @@ def get_feasible_non_dominated_extensions(
         )
 
     return feasibles
+
 
 def is_ext_not_dominated(
     N_v_relative: list[tuple[int, int]],

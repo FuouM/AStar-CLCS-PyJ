@@ -261,3 +261,40 @@ class MaxPriorityQueueOptimizedSecond:
 
     def __len__(self) -> int:
         return len(self._entry_finder)
+
+class MaxPriorityQueueOptimizedThird:
+    def __init__(self):
+        self._queue = []
+        self._entry_finder = {}
+        self._counter = 0
+
+    def push(self, item: Node, priority: int) -> None:
+        item_plu = item.get_plu()
+        if item_plu in self._entry_finder:
+            self._entry_finder[item_plu][-1] = None
+        entry = [-priority, self._counter, item]
+        self._entry_finder[item_plu] = entry
+        heapq.heappush(self._queue, entry)
+        self._counter += 1
+
+    def pop(self):
+        while self._queue:
+            _, _, item = heapq.heappop(self._queue)
+            if item:
+                del self._entry_finder[item.get_plu()]
+                return item
+        raise KeyError("pop from an empty priority queue")
+
+    def remove_node(self, item_plu: tuple[tuple[int, ...], int, int]) -> bool:
+        entry = self._entry_finder.pop(item_plu, None)
+        if entry:
+            entry[-1] = None
+            return True
+        return False
+
+    def is_empty(self) -> bool:
+        return not self._entry_finder
+
+    def __len__(self) -> int:
+        return len(self._entry_finder)
+    
