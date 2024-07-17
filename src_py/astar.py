@@ -1,19 +1,16 @@
-from astar_utils import (
-    create_pv_uv_from_label,
-    feasible_is_overshoot,
-    get_sigma_nd,
-    is_feasible,
-    is_node_dominated,
-)
+import numpy as np
+
 from datastructure import (
-    CLCS,
-    AStar_Solution,
-    # MaxPriorityQueueOptimized,
-    MaxPriorityQueueOptimizedSecond,
     Node,
     Pv_Uv,
+    AStar_Solution,
+    CLCS,
+    # MaxPriorityQueueOptimized,
+    MaxPriorityQueueOptimizedSecond,
 )
+from astar_utils import create_pv_uv_from_label, feasible_is_overshoot, get_sigma_nd, is_feasible, is_node_dominated
 from upperbound import ub_both
+
 
 
 def astar_run(inst: CLCS):
@@ -81,19 +78,17 @@ def astar_run(inst: CLCS):
                 v_ext_ub = ub_both(inst, v_ext_node)
                 if is_vext_visited:
                     assert N_v_relative is not None
-                    N_v_relative.append(v_ext_l_u)
+                    N_v_relative.insert(0, v_ext_l_u)
                 else:
                     insert_new_to_nv(N_v, v_ext_node)
                 Q_p.push(v_ext_node, v_ext_ub)
 
     return astar_sol
 
-
 def insert_new_to_nv(
     N_v: dict[tuple[int, ...], list[tuple[int, int]]], v: Node
 ) -> None:
     N_v[v.get_pv()] = [v.get_l_u()]
-
 
 def check_is_outdated(v: Node, N_v_relative: list[tuple[int, int]]) -> bool:
     outdated = False
@@ -103,14 +98,12 @@ def check_is_outdated(v: Node, N_v_relative: list[tuple[int, int]]) -> bool:
             break
     return outdated
 
-
 def derive_solution(v: Node, first_input: list[int]) -> list[int]:
     solution: list[int] = []
     while v.parent is not None:
         solution.insert(0, first_input[v.pv[0] - 2])
         v = v.parent
     return solution
-
 
 def get_feasible_non_dominated_extensions(
     inst: CLCS, v: Node, label_blacklist: set, posvec_blacklist: set
@@ -158,7 +151,6 @@ def get_feasible_non_dominated_extensions(
         )
 
     return feasibles
-
 
 def is_ext_not_dominated(
     N_v_relative: list[tuple[int, int]],

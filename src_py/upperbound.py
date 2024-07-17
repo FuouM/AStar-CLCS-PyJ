@@ -1,6 +1,7 @@
 import numpy as np
 
 from datastructure import Node, CLCS
+from astar_two_optimized import two_ub_min_occurrence
 
 INT_MAX = np.iinfo(np.int32).max
 
@@ -8,6 +9,8 @@ def ub_is_overshoot(num_inputs: int, pos_vec: list[int], input_lens: list[int]) 
     return [pos_vec[i] > input_lens[i] for i in range(num_inputs)]
 
 def ub_min_occurrence(sigma_len: int, num_inputs: int, pos_vec: list[int], input_lens: list[int], occurrence_tables: np.ndarray) -> int:
+    if num_inputs == 2:
+        return two_ub_min_occurrence(sigma_len, pos_vec, input_lens, occurrence_tables)
     is_overshoot = ub_is_overshoot(num_inputs, pos_vec, input_lens)
     ub = 0
     for label in range(sigma_len):
@@ -21,6 +24,8 @@ def ub_min_occurrence(sigma_len: int, num_inputs: int, pos_vec: list[int], input
     return ub
 
 def ub_mscore(min_len: int, num_inputs: int, pos_vec: list[int], mscores: np.ndarray) -> int:
+    if num_inputs == 2:
+        return min(min_len, mscores[0][pos_vec[0] - 1, pos_vec[1] - 1])
     ub = min_len
     
     for i in range(num_inputs-1):

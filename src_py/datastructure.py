@@ -139,10 +139,10 @@ class CLCS:
         use_numba=False,
     ) -> None:
         self.sigma_len = sigma_len
-        self.constraint = constraint
-        self.inputs = inputs
+        self.constraint = tuple(constraint)
+        self.inputs = tuple(tuple(x) for x in inputs)
         self.num_inputs = num_inputs
-        self.input_lens = input_lens
+        self.input_lens = tuple(input_lens)
         self.max_len = max_len
         self.min_len = min_len
         self.constraint_len = constraint_len
