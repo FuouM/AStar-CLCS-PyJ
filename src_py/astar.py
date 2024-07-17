@@ -5,7 +5,7 @@ from datastructure import (
     CLCS,
     # MaxPriorityQueueOptimized,
     # MaxPriorityQueueOptimizedSecond,
-    MaxPriorityQueueOptimizedThird
+    MaxPriorityQueueOptimizedThird,
 )
 from astar_utils import (
     create_pv_uv_from_label,
@@ -68,13 +68,16 @@ def astar_run(inst: CLCS):
                 # assert N_v_relative is not None
                 to_remove: list[tuple[int, int]] = []
                 do_insert = is_ext_not_dominated(
-                    N_v_relative, v_ext_l, v_ext_u, to_remove  # type: ignore
+                    N_v_relative,  # type: ignore
+                    v_ext_l,
+                    v_ext_u,
+                    to_remove,
                 )
 
                 for v_rel in to_remove:
                     # Q_p.remove_node(v_ext_pv_tuple, v_rel[0], v_rel[1])
                     Q_p.remove_node((v_ext_pv_tuple, v_rel[0], v_rel[1]))
-                    N_v_relative.remove(v_rel) # type: ignore
+                    N_v_relative.remove(v_rel)  # type: ignore
 
             if do_insert:
                 v_ext_l_u = (v_ext_l, v_ext_u)
@@ -116,22 +119,21 @@ def derive_solution(v: Node, first_input: list[int]) -> list[int]:
 def get_feasible_non_dominated_extensions(
     inst: CLCS, v: Node, label_blacklist: set, posvec_blacklist: set
 ) -> list[Pv_Uv]:
-    feasibles: list[Pv_Uv] = []
-
     if feasible_is_overshoot(inst.num_inputs, v.pv, inst.input_lens, posvec_blacklist):
-        return feasibles
+        return []
 
     sigma_nd = get_sigma_nd(
         inst.num_inputs, inst.sigma_len, v.pv, inst.successor_tables, label_blacklist
     )
 
+    feasibles: list[Pv_Uv] = []
     if v.u_v == inst.constraint_len:
-        for label in sigma_nd:
-            feasibles.append(
-                create_pv_uv_from_label(
-                    label, inst.num_inputs, v.u_v, v.pv, inst.successor_tables
-                )
+        feasibles = [
+            create_pv_uv_from_label(
+                label, inst.num_inputs, v.u_v, v.pv, inst.successor_tables
             )
+            for label in sigma_nd
+        ]
         return feasibles
 
     for label in sigma_nd:
