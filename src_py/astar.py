@@ -4,9 +4,8 @@ from datastructure import (
     AStar_Solution,
     CLCS,
     # MaxPriorityQueueOptimized,
-    MaxPriorityQueueOptimizedSecond,
-    MaxPriorityQueueOptimizedThird,
-    PriorityQueueOptimizedFifth
+    # MaxPriorityQueueOptimizedSecond,
+    MaxPriorityQueueOptimizedThird
 )
 from astar_utils import (
     create_pv_uv_from_label,
@@ -51,7 +50,7 @@ def astar_run(inst: CLCS):
             sol = derive_solution(v, inst.inputs[0])
             astar_sol.solutions.append(sol)
             astar_sol.expandeds.append(expanded)
-            print(f"Expanded {expanded}")
+            # print(f"Expanded {expanded}")
             break
         for pv_uv in v_nd:
             v_ext_l = v.l_v + 1
